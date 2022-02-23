@@ -46,394 +46,50 @@
 <!-- Slides go here -->
 <section data-markdown><script type="text/template">
 ### Part 0: Goals for today
-* Part 1: Architecture, and Parallel Limits
-* Part 2: Shared Memory Programming with OpenMP
-* Part 3: Basic Distributed Memory Programming with OpenMPI
-* Part 4: Debugging
+* Part 1: Python and HPC Environments
+* Part 2: Job Submission with Python
+* Part 3: Parallel Python
+* Part 4: Optimising Python
 </script></section>
 <section data-markdown><script type="text/template">
 ### Part 0: Slide Respository
-* A copy of the slides and same code is available at: https://github.com/levlafayette/SpartanParallel
-* Make use of our resources: `dashboard.hpc.unimelb.edu.au`,  `hpc-support@unimelb.edu.au`, `man spartan`, `/usr/local/common`
+* A copy of the slides and same code is available at: https://github.com/levlafayette/SpartanPython
+* Make use of our resources: `dashboard.hpc.unimelb.edu.au`,  `hpc-support@unimelb.edu.au`, `man spartan`
+* Especially `/usr/local/common/Python`
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Parallel Programming Strategy
-#### "Taking control is the key strategy!"
--- Dr. Rolf Rabenseifner, High Performance Computing Center, Stuttgart
+### Part 1: The Python Story
+* Python is a very popular high-level programming language. Top of the Tiobe index (Feb 2022)
+* First released in 1991 byGuido van Rossum at Centrum Wiskunde & Informatica (CWI) in the Netherlands
+* v2.0 in 2000 with better memory management (garbage collector) and Unicode support. v3.0 first ever intentionally backwards incompatible (print as a function, APIs such views and iterators used in instead Of lists), text and binary rather than unicode and 8-bit.
+* Named after "Monty Python's Flying Circus", which Guido was reading at the time. 
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Data and Task Parallel Jobs
-* The difference between data and task parallisation is a fundamental concept.
-* With a data parallel job the data is split up for paralleisation (e.g., multiple datasets, single task).
-* With a task parallel job the tasks are split up for parallelisation (e.g., multiple simultaneous tasks).
-* A job can be a hybrid of the two (e.g., multiple tasks, multiple datasets).
+### Part 1: Python Design
+* Designed for code readability, object-orientated approach, dynamically-typed,  dynamic name resolution.
+* Design principles encapsulated in "Zen of Python" by Tim Peters; major elements include: Beautiful is better than ugly, Explicit is better than implicit, Simple is better than complex, Complex is better than complicated, Readability counts,  Flat is better than nested, Errors should never pass silently (Unless explicitly silenced), There should be one – and preferably only one – obvious way to do it (a dig at Perl), If the implementation is hard to explain, it's a bad idea.
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Data Parallel Jobs
-* Data parallel jobs are the simplest type of parallelism - and the most common.
-* Single threaded jobs (such as MATLAB, R etc) can be launched across multiple datasets by using job arrays.
-* Example job arrays in Slurm at: `/usr/local/common/array`
-* Note that the index values and step size can be varied.
+<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/python_environment.png" height="200%" width="200%" />
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Task Parallel Jobs
-* Task parallel jobs require a communications systems whether it is through threads (OpenMP) or by message passing (OpenMPI).
-* Thread-based parallelism requires that the tasks occur within the same computer node (shared memory).
-* Message passing can distribute information between compute nodes (distributed memory).
+### Part 1: Versions and Extensions
+* Python has many release versions, more than 200,000 extensions known as "packages", and a number of installation methods and environments. This can be is complex and confusing.
+* The basic and recommended approproach on Spartan is the modules system for the core language and some packages. e.g., `module -r avail '^python'`, `module avail scipy-bundle`, `module avail numpy`
+* Because there are so many packages we often suggest that users install them in their own environment.
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Task Parallel NAMD
-* In Slurm scripts on Spartan MPI programmes will need to set the paths to the OpenMPI wrappers (`module avail OpenMPI/`). Some simple examples are available at: `/usr/local/common/OpenMPI`
-* A number of applications are already designed to be task parallel; NAMD is one. An example slurm script is located at `/usr/local/common/NAMD`. This script can be run and can be visualised locally with VMD.
+### Part 1: Environments
+* Python environments are used to create a self-contained directory tree that has application coherence (so the requirements of application A don't conflict with those for application B).
+* This is possible with modules, most popular user tools are VirtualEnv and Conda. Whilst popular there are many problems with using these on an HPC, including default install location and environment changes. 
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Task Parallel Matlab
-* There is a simple example of task parallel Matlab, available in `/usr/local/common/MATLAB`, using the most basic of Matlab worker distribution, the parfor loop.
+<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/squarematrixmultiply.png" height="200%" width="200%" />
 </script></section>
 <section data-markdown><script type="text/template">
-### Part 1: Task Parallel Python
-* Python is, by default, a single-threaded programming language. However we have added the mpi4py package to give it parallel capabilites. Example scripts are located at `/usr/local/common/Python`. In particular the file `twitter_search_541635.py` invokes the mpi4py library.
-* A number of examples are available at `/usr/local/common/Python/mpi4py-examples-master`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Flynn's Taxonomy
-* The type parallelisation can be determined by Flynn's taxonomy of computer Systems (1966), where each process is considered as the execution of a pool of instructions (instruction stream) on a pool of data (data stream), and with these streams are single or multiple. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Flynn's Taxonomy
-* Four basic possibilities: Single Instruction Stream, Single Data Stream (SISD), Single Instruction Stream, Multiple Data Streams (SIMD), Multiple Instruction Streams, Single Data Stream (MISD), Multiple Instruction Streams, Multiple Data Streams (MIMD)
-</script></section>
-<section data-markdown><script type="text/template">
-<img src="https://media.geeksforgeeks.org/wp-content/uploads/cao.png" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Flynn's Taxonomy
-* In the MIMD taxonomy there are now also the taxons of Single Program Multiple Data streams (SPMD) and Multiple Programs Multiple Data streams (MPMD).
-* In SPMD, multiple autonomous processors execute the same program on multiple data streams. This differs from SIMD approaches which a single processor executes on multiple data streams. 
-* In the latter case (MPMD) the autonomous processors operate with at least two independent programs.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Processors and Cores
-* A processor is a physical device that accepts data as input and provides results as output. A uniprocessor system has one such general purpose device. 
-* A unicore processor carries out the usual functions of a CPU, according to the instruction set. A multicore processor has independent central processing units ('cores') integrated a single integrated circuit die or a single chip package.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Threads and Strands
-* A process provides the resources to execute an instance of a program (such as address space, the code, handles to system objects, a process identifier etc).  An execution thread is the smallest processing unit in an operating system, contained inside a process. 
-* There are also hardware threads (aka "strands"). Determine this from the output of `lscupu` and view the `NUMA node` information.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Multicore Drivers
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/intelcpu.jpg" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Multicore Drivers
-* Datasets are becoming larger than computers are improving.
-* Effective clock speeds have flattened due to heat and power.
-* Increasing gap between memory and processing speeds. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Multicore Drivers
-* Symmetric multiprocessing (multi-processors, shared memory) is well established technology (IBM System/360, 1964)
-* Tilera have developed 64 core (TILE64, 2007), and then a 100 core processor (2009). Founder Dr. Anant Agarwal leads the MIT Angstrom Project to develop a 1,000 core processor (2012 cont). 128 core processor by Ampere's Altra (2020)
-* NViDIA P100 3584 CUDA Cores (2016). NViDIA V100 5120 CUDA Cores (2018). 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Memory Distribution
-* In a  multiprocessor computer system memory can either be distributed or shared. Memory coherence is an issue is shared memory environments.
-* HPC Clusters use memory distributed between compute nodes and shared within compute nodes.
-</script></section>
-<section data-markdown><script type="text/template">
-<img src="https://raw.githubusercontent.com/UoM-ResPlat-DevOps/SpartanParallel/master/Images/hpcmemory.png" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Memory Distribution
-* Operating systems like Plan 9 from Bell Labs creates a network function as a single collection of system resources.
-* OpenMP uses shared memory parallelism; MPI uses distributed memory parallelism. The latter can cross compute nodes.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Speedup and Locks
-* The speedup of parallelism can be measured: Speedup (p) = Time (serial)/ Time (parallel). Ideal (linear) speedup is S(p) = p.
-* Correctness requires requires synchronisation (locking). Synchronisation and atomic operations causes loss of performance, communication latency. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Deadlocks and Livelocks
-* "When two trains approach each other at a crossing, both shall come to a full stop and neither shall start up again until the other has gone." (apocryphal Kansas railway statute)
-* "When two people approach each other in a crowded corridor, both shall move out of the way of the other, and shall continue to move until they have an open path for progress" (Polite Persons in a Corridor Problem)
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Amdahl's Law 
-* Because some of the task is in serial, there is a limit to the speedup based on the time that is required for the sequential task - no matter how many processors are thrown at the problem.
-</script></section>
-<section data-markdown><script type="text/template">
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/amdhal.png" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 1: Gustafson-Barsis Law
-* Gene Amdahl proposed his law in 1967; it wasn't until over twenty years later in 1988 that an alternative by John L. Gustafson and Edwin H. Barsis was offered. 
-* Amadahl's Law assumed a computation problem of fixed data set size. Programmers tend to set the size of their computational problems according to the available equipment; therefore as faster and more parallel equipment becomes available, larger problems can be solved.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Fork-Join in POSIX
-* A fork-join approach can be used in multithreading. This is the method used by OpenMP and also with POSIX threads (pthreads). 
-* A program's execution branches off in parallel threads at specified points in the program and joins and merges at a subsequent specified point, returning to serial execution.
-* A master thread contains the instructions that are to be executed in parallel and executes additional worker threads that divide the task among them. 
-</script></section>
-<section data-markdown><script type="text/template">
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/fork_join2.gif" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: What Is OpenMP?
-* OpenMP (Open Multi-Processing) is an API for multi-threaded, shared-memory parallelism for Fortran and C/C++. The API consists of (i) compiler directives, (ii) run-time library routienes, and (iii) environment variables.
-* A standard for shared memory architectures, endorsed by some major players (e.g.. H-P, IBM, NAG, PGI etc). Founded in 1997.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: What Is OpenMP?
-* Designed to relatively simple with significant benefits from a few explicit directives, but can be fine-grained (e.g., multiple levls of nested parallelism, and nested locks).
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Preparation
-* The first step in any OpenMP program ought to be identification of the regions of code that could be executed concurrently or in parallel and then applying appropriate compiler directives.
-* The run-time routines (or functions in Fortran) are used to query and set threads within a directive scope.
-* The environment variables are specified by the shell to set and bind threads to processors. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Caveat
-* The OpenMP standard has no specifications about parallel I/O. This may result in issues (race conditions) if multiple threads attempt to write/read from the same file.
-* It is entirely up to the programmer to ensure that I/O is conducted correctly within the context of a multi-threaded program. 
-* Especially a problem, because a lot of OpenMP deals with parallelising loops.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Compiler Directives
-* OpenMP API compiler directives and internal control variables can be added to a sequential program to invoke parallel capability. They are the absolute foundation from which a OpenMP program can be differentiated from a sequential program. 
-* OpenMP directives are designed to appear as comments. Compiler directives initiate a parallel region, divide code among threads, distribute loops among threads, and synchronise work among threads. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Compiler Directives
-* OpenMP compiler directives must begin with a sentinel (Fortran) or pragma (C). All compiler directives have the basic form of: `sentinel/pragma directive-name [clauses, ...]`
-* The directory `/usr/local/common/OpenMP` has multiple Fortran and C "hello world" examples. The file "PARALLEL' contains various options for this fundamental construct.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Structural Definitions
-* The code an execution structure of OpenMP consists of structured blocks, constructs, and regions of code.
-* An OpenMP directive is followed by a *structured block* (in C, single or compound statements, braced block; in Fortran termined with an 'end' directive). 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Structural Definitions
-A *construct* starts with the directive, includes the structured block, and the end directive. It contains the statements directly enclosed, and not any subroutines called from them. A *region of code* is all statements that are dynamically encountered while executing the code of an OpenMP construct. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Nested Parallelism
-* A function can be called within a parallel region and that function itself can have a parallel region.
-* By default, the nested region will have only one thread; but this can be set with the `OMP_NESTED=true` environment variable. See the example, `nested.c`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Variables and Scoping
-* The examples `sharedhello.c` and `sharedhello.f90` illustrate two further aspects. Firstly, that the value of variables inside a function can be different to those outside it, and secondly the number of threads that a function uses can be set.
-* Data within a parallal region is shared by default and all threads can access this data.
-* The private (variable) option in the directive it ensures that the variable is private to the thread that is using it. See `helloomp2.c` and `helloomp2.f90`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Static, Orphaned, Dynamic
-* Static extent is enclosed within a structured directive block (e.g., a 'do' directive within a 'parallel' region).
-* Orphaned directive is appears independently from another enclosing directive. Can span routines. See `omp_orphan.[c,f]`
-* Dynamic extent includes static extents and orphaned directives.
-* OpenMP scoping rules determine how directives can bind and nest with each other.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Loop Constructs
-* One of the most typical applications is the parallelisation of loops. This includes a worksharing construct. Example are available at: `hello1millomp.c`, `hello1millomp.f90`. Note difference between "parallel" and "parallel for/do".
-* Save typing! Note difference between `hello1millomp.c` and `hello1amillomp.c`
-* A further variation is the SIMD loop, designed for multiple data tasks for newer CPUs. This example is available at `hello1millsimd.[c,f90]`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Loop Constructs
-* The `sections` construct contains a collection of structured blocks that are distributed among the threads in the team. The examples are: `hello3versomp.[c.f90]`
-</script></section>
-<section data-markdown><script type="text/template">
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/work_share1.png" />
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/work_share2.png" />
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/work_share3.png" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Tasks and Synchronisation
-* `Task` constructs allow for a thread to generate tasks that are executed according to the runtime system, immediately or delayed. Task synchronisation is carried out with the `barrier` or `taskwait` constructs. 
-* An example of the various task constructs are `colourless-3.[f90,c]`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: ICVs 
-* An official OpenMP publication contains an absolutely superb example of internal control variables and their interactions with runtime library routines (`icv1.f90` and `icv1.c`). 
-* Four ICV's - nest-var, mex-active-levels-var, dyn-var, and nthreads-var - are modified by calls their respective library routines (`omp_set_nested()`, `omp_set_max_active_levels()`, `omp_set_dynamic()`, and `omp_set_num_threads()`).
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 2: Combined Example
-* Dijkstra shortest-path finder in a bidirectional graph,`Dijkstra.c`
-* Note use of parallel, single, barrier, and critical clauses.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Message Passing
-* The core principle is that many processors should be able cooperate to solve a problem by passing messages to each through a common communications network. 
-* It does require additional programmer effort. Additional routines act as wrappers to existing compilers.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: The Communications World
-* The basic principle behind MPI is to intiate a communications world, assign ranks to each member of that communications world, carry out the necessary tasks and close the communications world. 
-* The examples `mpi-helloworld.c` and `mpi-helloworld.f90`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Send and Receiving
-* There are several routines for sending and receiving information in MPI. In each of these a number of parameters must be included, including the buffer, the rank of the sender, the rank of the receiver, a communication notice, a tag.
-* If the MPI communications world is analoguous to a postal service, this information is the equivalent of addressing an envelope.
-* The basic example is `mpi-sendrecv.c` and `mpi-sendrecv.f90`.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Send and Receive Options
-* `MPI_Status()` MPI_Status is not a routine, but  rather a data structure and is typically attached to an MPI_Recv() routine.
-* `MPI_Ssend()` MPI_Ssend performs a synchronous-mode, blocking send. Whereas MPI_Send will not return until the program can use the send buffer,  MPI_Ssend will no return until a matching receive is posted.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Send and Receive Options
-|Send Mode | Explanation | Benefits  |Problems      |
-|:---------|:------------|:----------|:-------------:|
-|MPI_Send() | Standard send. May be synchronous or buffering | Flexible tradeoff; automatically uses buffer if available, but goes for synchronous if not. | Can hide deadlocks, uncertainty of type makes debugging harder. |
-</script></section>
-<section data-markdown><script type="text/template">
-|Send Mode | Explanation | Benefits  |Problems      |
-|:---------|:------------|:----------|:-------------:|
-| MPI_Ssend() | Synchronous send. Doesn't return until receive has also completed. | Safest mode, confident that message has been received. | Lower performance, especially without non-blocking. |
-</script></section>
-<section data-markdown><script type="text/template">
-|Send Mode | Explanation | Benefits  |Problems      |
-|:---------|:------------|:----------|:-------------:|
-| MPI_Bsend() | Buffered send. Copies data to buffer, program free to continue whilst message delivered later. | Good performance. Need to be aware of buffer space. | Buffer management issues. |
-</script></section>
-<section data-markdown><script type="text/template">
-|Send Mode | Explanation | Benefits  |Problems      |
-|:---------|:------------|:----------|:-------------:|
-| MPI_Rsend() | Receive send. Message must be already posted. | Slight performance increase since there's no handshake. | Risky and difficult to design. |
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Collective Communications
-* MPI can also conduct collective communications.  These include MPI_Broadcast, MPI_Scatter, MPI_Gather, MPI_Reduce, and MPI_Allreduce. 
-* MPI_Bcast Broadcasts a message from the process with rank "root" to all other processes of the communicator, including itself. It is significantly more prefereable than using a loop.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Collective Communications
-* MPI_Scatter sends data from one task to all tasks in a group; the inverse operation of MPI_Gather. The outcome is as if the root executed n send operations and each process executed a receive. MPI_Scatterv scatters a buffer in parts to all tasks in a group.
-</script></section>
-<section data-markdown><script type="text/template">
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/scatter.png" />
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/gather.png" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Reductions
-* MPI_Reduce performs a reduce operation (such as sum, max, logical AND, etc.) across all the members of a communication group.
-* MPI_Allreduce conducts the same operation but returns the reduced result to all processors.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Reductions
-* The general principle in Reduce and All Reduce is the idea of reducing a set of numbers to a small set via a function. If you have a set of numbers (e.g., [1,2,3,4,5]) a reduce function (e.g., sum) can convert that set to a reduced set (e.g., 15). MPI_Reduce takes in an array of values as that set and outputs the result to the root process. MPI_AllReduce outputs the result to all processes.
-* Examples; `mpi-particle.f90` `mpi-particle.f90`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Reductions
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/reduce.png" /> 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Reductions
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/allreduce.png" />
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Reduction Operators
-| MPI_Name  | Function |
-|:----------|:---------|
-| MPI_MAX   | Maximum  |
-| MPI_MIN   | Minimum  |
-| MPI_SUM   | Sum      |
-| MPI_PROD  | Product  |
-| MPI_LAND  | Logical AND |
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 3: Reduction Operators
-| MPI_Name  | Function |
-|:----------|:---------|
-| MPI_BAND  | Bitwise AND |
-| MPI_LOR   | Logical OR  |
-| MPI_BOR   | Bitwise OR |
-| MPI_LXOR  | Logical exclusive OR |
-| MPI_BXOR  | Bitwise exclusive OR |
-| MPI_MAXLOC | Maximum and location |
-| MPI_MINLOC | Miniumun and location|
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Common Mistakes
-* System and Syntax errors (e.g., wrong environment, missing or wrong terminators, wrong qutotes). 
-* Compiler can catch these!
-* Semantic errors (e.g., crossing array bounds, wrong scope, memory leaks)
-* Compiler won't catch these - means unexpected behaviour.
-* Resolve with unit tests. Test mid-range, test boundary conditions, test out-of-bounds.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Parallel Code
-* Race conditions. e.g., different values racing to modify a variable.
-* Deadlocks and livelocks. e.g., locking mechanisms that halt, or loop forever.
-* Start with working serial code - then incrementally make parallel.
-* Basic debugging and profiling examples at `/usr/local/common/Debug`.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Valgrind for Memory Management
-* Valgrind is a debugging suite that automatically detects many memory management and threading bugs. 
-* Typically built for serial applications, it can also be built with mpicc wrappers for GCC and Intel.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Valgrind for Memory Management
-* Use the same compiler used in both the build and the Valgrind test. Turn on debgugging information at compilation.
-* `mpicc -g mpi-debug.c -o mpi-debug` or `mpif90 -g mpi.debug.f90 -o mpi-debug` then `mpiexec -np 2 valgrind ./mpi-sendrec 2> valgrind.out`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: GDB for Debugging
-* GDB, the GNU Project debugger, allows you to see what happens to a program while it executes.
-* Stepwise operation on code; 
-* Basic example with `gdbtest.c`. Consider using `--command=gdb.cmd`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Diff and Patch
-* When making changes to code, separating between dev and prod versions is recommended.
-* Production code might work in one environment, but not another (e.g., compiler differences).
-* When you have a working dev code, create a patch file and apply when required:
-* `diff -Naur gdbtest.c gdbtest2.c > gdbpatch.patch`, `patch gdbtest.c gdbpatch.patch`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: GDB on multiple nodes
-* MPI example with gdb.cmd Attach to individual processes and stepwise. 
-* Add `printf("PID %d on %s ready for attach\n", getpid(), hostname);`, then `mpiexec -np 2 mpi-debug` and `gdb -p $PID` 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Optimsation
-* "The real problem is that programmers have spent far too much time worrying about efficiency in the wrong places and at the wrong times; premature optimization is the root of all evil (or at least most of it) in programming." (Knuth, 1974)
-* Work with a top-down structure. Think big, then small. Look for data flow issues (within and outside of the program). Look at overall architecture. Then look at data structures and algorithm choices. Then profiling specific parts of the code to identify potential areas of gain.
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Perf
-* The `perf` tool is powerful: it can instrument CPU performance counters, tracepoints, kprobes, and uprobes (dynamic tracing). It is capable of lightweight profiling. Run `perf --help` to see summar of options. List of events from `perf list`. Main command `perf stat`.
-* It can be applied across an entire job (`perf stat srun -n 2 ./mpi-debug`), or individual tasks (`srun -n 2 perf stat ./mpi-debug`). Note however that the `perf record` will not work for the later. 
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: Gprof
-* Gprof, the GNU profiler, provides a flat profile (total execution time in each function) and and the call graph, which shows who called a function (parent) and who it called (child subroutines).
-</script></section>
-<section data-markdown><script type="text/template">
-
-### Part 4: Gprof
-* Instrumention code is inserted with the `-pg` option at compilation. The `gprof` tool can be run against the executatble and output. e.g.,
-`gcc -Wall -pg test_gprof.c test_gprof_new.c -o test_gprof`, `./test_grof`, then `gprof test_gprof gmon.out > analysis.txt`
-</script></section>
-<section data-markdown><script type="text/template">
-### Part 4: PDT and TAU
-* TAU (Tuning and Analysis Utilities) is a portable profiling and tracing toolkit.
-* Parallel Performance Issues include the following: Coverage - % of the code that is parallel., Granularity - Amount of work in each section
-Load Balancing., Locality - Communication structure., Synchronization - Locking latencies
-* Load with `pprof` and `paraprof`
+### Part 1: Python Is Slow
+* For a sample computationally-intensive problems (a square matrix multiplication), Java is 8.8x faster than Python, CLang is 18x faster. Difference between an interpreted language versus a byte-code with JiT compilation, versus compilation to machine-code.
+* Similar results when comparing overall energy efficiency; runtime, memory usage, energy consumption (CPU, DRAM). Compared against 27 programming languages, Python came last. Compiled languages (C, C++, Fortran, Rust, Pascal) were best. Interpreted languages like Python, Perl, Lua, Ruby were the worst. 
 </script></section>
 <section data-markdown><script type="text/template">
 <img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/hypnotoad.png" height="200%" width="200%" />
