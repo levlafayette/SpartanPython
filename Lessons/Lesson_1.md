@@ -45,7 +45,7 @@
 -- *Slide End* --
 
 -- *Slide* --
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/squarematrixmultiply.png" height="200%" width="200%" />
+<img src="https://raw.githubusercontent.com/levlafayette/SpartanPython/master/Images/squarematrixmultiply.png" height="200%" width="200%" />
 -- *Slide End* --
 
 -- *Slide* --
@@ -70,10 +70,9 @@
 -- *Slide* --
 ### Part 2: Multicore Jobs with MPI4Py
 * Some Python extensions allow for parallelisation, both shared-memory multi-threading (multiprocessing) and distributed memory multi-threading (MPI4PY). See examples: 2019multiproc1.slurm, 
-
 -- *Slide End* --
 
 
 -- *Slide* --
-<img src="https://raw.githubusercontent.com/levlafayette/SpartanParallel/master/Images/hypnotoad.png" height="200%" width="200%" />
+<img src="https://raw.githubusercontent.com/levlafayette/SpartanPython/master/Images/hypnotoad.png" height="200%" width="200%" />
 -- *Slide End* --
